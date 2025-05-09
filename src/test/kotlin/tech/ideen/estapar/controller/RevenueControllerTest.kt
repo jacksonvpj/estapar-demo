@@ -24,7 +24,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Optional
 
 @MicronautTest
-class RevenueTest: EstaparTestContainer() {
+class RevenueControllerTest: EstaparTestContainer() {
 
     @Inject
     @field:Client("/")

@@ -16,13 +16,16 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.ideen.estapar.api.dto.spot.SpotStatusRequestDTO
 import tech.ideen.estapar.api.dto.spot.SpotStatusResponseDTO
+import tech.ideen.estapar.api.dto.webhook.EntryEventDTO
+import tech.ideen.estapar.api.dto.webhook.ParkedEventDTO
 import tech.ideen.estapar.config.EstaparTestContainer
+import tech.ideen.estapar.domain.model.EventType
 import tech.ideen.estapar.service.SpotService
 import java.time.LocalDateTime
 import java.util.Optional
 
 @MicronautTest
-class SpotStatusTest : EstaparTestContainer(){
+class SpotStatusControllerTest : EstaparTestContainer(){
 
     @Inject
     @field:Client("/")
@@ -31,8 +34,8 @@ class SpotStatusTest : EstaparTestContainer(){
     @Test
     fun `should return spot status when spot exists and is unoccupied`() {
         // Arrange
-        val latitude = 12.345
-        val longitude = 67.890
+        val latitude = -23.561664
+        val longitude = -46.655961
 
         val request = HttpRequest.POST(
             "/spot-status",
@@ -55,8 +58,26 @@ class SpotStatusTest : EstaparTestContainer(){
     @Test
     fun `should return spot status when spot exists and is occupied`() {
         // Arrange
-        val latitude = 23.456
-        val longitude = 78.901
+        val latitude = -23.561664
+        val longitude = -46.655961
+
+        val entryEvent = EntryEventDTO(
+            licensePlate = "PARKED456",
+            entryTime = "2025-01-01T12:00:00.000Z",
+            eventType = EventType.ENTRY
+        )
+
+        val entry = HttpRequest.POST("/webhook", entryEvent)
+        client.toBlocking().exchange(entry, Map::class.java)
+        // Arrange
+        val parkedEvent = ParkedEventDTO(
+            licensePlate = "PARKED456",
+            latitude = latitude,
+            longitude = longitude,
+            eventType = EventType.PARKED
+        )
+        val parked = HttpRequest.POST("/webhook", parkedEvent)
+        client.toBlocking().exchange(parked, Map::class.java)
 
         val request = HttpRequest.POST(
             "/spot-status",

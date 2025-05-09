@@ -19,7 +19,7 @@ import tech.ideen.estapar.domain.model.EventType
 import tech.ideen.estapar.service.VehicleService
 
 @MicronautTest
-class WebhookTest : EstaparTestContainer(){
+class WebhookControllerTest : EstaparTestContainer(){
 
     @Inject
     @field:Client("/")

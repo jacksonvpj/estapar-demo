@@ -36,13 +36,13 @@ class SpotService(
      * @param latitude The latitude
      * @param longitude The longitude
      * @return A map containing the spot status information
-     * @throws IllegalStateException if the spot is not found
+     * @throws NoSuchElementException if the spot is not found
      */
     fun getSpotStatus(latitude: Double, longitude: Double): Map<String, Any?> {
         logger.info("Getting status for spot at location: $latitude, $longitude")
 
         val spot = getSpotByLocation(latitude, longitude)
-            .orElseThrow { IllegalStateException("Spot not found at location: $latitude, $longitude") }
+            .orElseThrow { NoSuchElementException("Spot not found at location: $latitude, $longitude") }
 
         val result = mutableMapOf<String, Any?>(
             "occupied" to spot.occupied
@@ -70,13 +70,13 @@ class SpotService(
      * @param longitude The longitude
      * @param occupied The new occupied status
      * @return The updated spot
-     * @throws IllegalStateException if the spot is not found
+     * @throws NoSuchElementException if the spot is not found
      */
     fun setSpotOccupied(latitude: Double, longitude: Double, occupied: Boolean): Spot {
         logger.info("Setting spot at location: $latitude, $longitude to occupied: $occupied")
 
         val spot = getSpotByLocation(latitude, longitude)
-            .orElseThrow { IllegalStateException("Spot not found at location: $latitude, $longitude") }
+            .orElseThrow { NoSuchElementException("Spot not found at location: $latitude, $longitude") }
 
         spot.occupied = occupied
         return spotRepository.update(spot)
