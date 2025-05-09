@@ -1,4 +1,4 @@
-package tech.ideen.estapar.controller
+package tech.ideen.estapar.config
 
 import io.micronaut.test.support.TestPropertyProvider
 import org.junit.jupiter.api.TestInstance
@@ -9,7 +9,7 @@ import org.wiremock.integrations.testcontainers.WireMockContainer
 
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-abstract class EstaparControllerTestContainer : TestPropertyProvider {
+abstract class EstaparTestContainer : TestPropertyProvider {
 
     companion object {
         @Container

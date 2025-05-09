@@ -12,6 +12,7 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
+import tech.ideen.estapar.config.EstaparTestContainer
 import tech.ideen.estapar.domain.model.Revenue
 import tech.ideen.estapar.domain.model.Sector
 import tech.ideen.estapar.domain.model.Spot
@@ -23,7 +24,7 @@ import java.time.LocalTime
 import java.util.Optional
 
 @MicronautTest
-class SectorServiceTest {
+class SectorServiceTest : EstaparTestContainer() {
 
     private lateinit var sectorRepository: SectorRepository
     private lateinit var revenueRepository: RevenueRepository

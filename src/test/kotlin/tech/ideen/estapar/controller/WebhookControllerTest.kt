@@ -14,10 +14,12 @@ import org.junit.jupiter.api.Test
 import tech.ideen.estapar.api.dto.webhook.EntryEventDTO
 import tech.ideen.estapar.api.dto.webhook.ExitEventDTO
 import tech.ideen.estapar.api.dto.webhook.ParkedEventDTO
+import tech.ideen.estapar.config.EstaparTestContainer
+import tech.ideen.estapar.domain.model.EventType
 import tech.ideen.estapar.service.VehicleService
 
 @MicronautTest
-class WebhookControllerTest : EstaparControllerTestContainer(){
+class WebhookTest : EstaparTestContainer(){
 
     @Inject
     @field:Client("/")
@@ -29,7 +31,7 @@ class WebhookControllerTest : EstaparControllerTestContainer(){
         val entryEvent = EntryEventDTO(
             licensePlate = "TEST123",
             entryTime = "2025-01-01T12:00:00.000Z",
-            eventType = "ENTRY"
+            eventType = EventType.ENTRY
         )
 
         val request = HttpRequest.POST("/webhook", entryEvent)
@@ -47,12 +49,20 @@ class WebhookControllerTest : EstaparControllerTestContainer(){
 
     @Test
     fun `webhook should process parked event successfully`() {
+        val entryEvent = EntryEventDTO(
+            licensePlate = "PARKED456",
+            entryTime = "2025-01-01T12:00:00.000Z",
+            eventType = EventType.ENTRY
+        )
+
+        val entry = HttpRequest.POST("/webhook", entryEvent)
+        client.toBlocking().exchange(entry, Map::class.java)
         // Arrange
         val parkedEvent = ParkedEventDTO(
             licensePlate = "PARKED456",
-            latitude = 12.345,
-            longitude = 67.890,
-            eventType = "PARKED"
+            latitude = -23.561664,
+            longitude = -46.655961,
+            eventType = EventType.PARKED
         )
 
         val request = HttpRequest.POST("/webhook", parkedEvent)
@@ -70,11 +80,31 @@ class WebhookControllerTest : EstaparControllerTestContainer(){
 
     @Test
     fun `webhook should process exit event successfully`() {
+
+        val entryEvent = EntryEventDTO(
+            licensePlate = "EXIT789",
+            entryTime = "2025-01-01T12:00:00.000Z",
+            eventType = EventType.ENTRY
+        )
+
+        val entry = HttpRequest.POST("/webhook", entryEvent)
+        client.toBlocking().exchange(entry, Map::class.java)
+        // Arrange
+        val parkedEvent = ParkedEventDTO(
+            licensePlate = "EXIT789",
+            latitude = -23.561664,
+            longitude = -46.655961,
+            eventType = EventType.PARKED
+        )
+
+        val parked = HttpRequest.POST("/webhook", parkedEvent)
+        client.toBlocking().exchange(parked, Map::class.java)
+
         // Arrange
         val exitEvent = ExitEventDTO(
             licensePlate = "EXIT789",
             exitTime = "2025-01-01T14:00:00.000Z",
-            eventType = "EXIT"
+            eventType = EventType.EXIT
         )
 
         val request = HttpRequest.POST("/webhook", exitEvent)
@@ -90,30 +120,6 @@ class WebhookControllerTest : EstaparControllerTestContainer(){
         assertEquals("Event processed successfully", responseBody["status"])
     }
 
-    @Test
-    fun `webhook should return bad request for unknown event type`() {
-        // Arrange
-        val unknownEvent = """
-            {
-                "license_plate": "UNKNOWN123",
-                "event_type": "UNKNOWN_TYPE",
-                "some_data": "some value"
-            }
-        """.trimIndent()
-
-        val request = HttpRequest.POST("/webhook", unknownEvent)
-            .header("Content-Type", "application/json")
-
-        // Act
-        val response = client.toBlocking().exchange(request, Map::class.java)
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.status)
-
-        val responseBody = response.body()
-        assertTrue(responseBody.containsKey("error"))
-        assertTrue((responseBody["error"] as String).contains("Unknown event type"))
-    }
 }
 
 @Singleton

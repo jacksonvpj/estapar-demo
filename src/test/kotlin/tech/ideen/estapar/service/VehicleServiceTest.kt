@@ -13,6 +13,7 @@ import org.mockito.kotlin.whenever
 import tech.ideen.estapar.api.dto.webhook.EntryEventDTO
 import tech.ideen.estapar.api.dto.webhook.ExitEventDTO
 import tech.ideen.estapar.api.dto.webhook.ParkedEventDTO
+import tech.ideen.estapar.config.EstaparTestContainer
 import tech.ideen.estapar.domain.model.EventType
 import tech.ideen.estapar.domain.model.ParkingEvent
 import tech.ideen.estapar.domain.model.ParkingSession
@@ -33,7 +34,7 @@ import java.util.Optional
 import java.util.UUID
 
 @MicronautTest
-class VehicleServiceTest {
+class VehicleServiceTest: EstaparTestContainer() {
 
     private lateinit var vehicleRepository: VehicleRepository
     private lateinit var parkingEventRepository: ParkingEventRepository
@@ -65,7 +66,7 @@ class VehicleServiceTest {
         val licensePlate = "ZUL0001"
         val entryTimeStr = "2025-01-01T12:00:00.000Z"
         val entryTime = ZonedDateTime.parse(entryTimeStr, DateTimeFormatter.ISO_DATE_TIME).toLocalDateTime()
-        val entryEvent = EntryEventDTO(licensePlate = licensePlate, entryTime = entryTimeStr, eventType = "ENTRY")
+        val entryEvent = EntryEventDTO(licensePlate = licensePlate, entryTime = entryTimeStr, eventType = EventType.ENTRY)
 
         val vehicle = createSampleVehicle(licensePlate)
 
@@ -105,7 +106,7 @@ class VehicleServiceTest {
             licensePlate = licensePlate,
             latitude = latitude,
             longitude = longitude,
-            eventType = "PARKED"
+            eventType = EventType.PARKED
         )
 
         val vehicle = createSampleVehicle(licensePlate)
@@ -139,7 +140,7 @@ class VehicleServiceTest {
         val licensePlate = "ZUL0001"
         val exitTimeStr = "2025-01-01T14:00:00.000Z"
         val exitTime = ZonedDateTime.parse(exitTimeStr, DateTimeFormatter.ISO_DATE_TIME).toLocalDateTime()
-        val exitEvent = ExitEventDTO(licensePlate = licensePlate, exitTime = exitTimeStr, eventType = "EXIT")
+        val exitEvent = ExitEventDTO(licensePlate = licensePlate, exitTime = exitTimeStr, eventType = EventType.EXIT)
 
         val vehicle = createSampleVehicle(licensePlate)
         val spot = createSampleSpot()
@@ -252,7 +253,7 @@ class VehicleServiceTest {
             licensePlate = licensePlate,
             latitude = latitude,
             longitude = longitude,
-            eventType = "PARKED"
+            eventType = EventType.PARKED
         )
 
         val vehicle = createSampleVehicle(licensePlate)
@@ -313,7 +314,7 @@ class VehicleServiceTest {
             licensePlate = licensePlate,
             latitude = latitude,
             longitude = longitude,
-            eventType = "PARKED"
+            eventType = EventType.PARKED
         )
 
         val vehicle = createSampleVehicle(licensePlate)
@@ -374,7 +375,7 @@ class VehicleServiceTest {
             licensePlate = licensePlate,
             latitude = latitude,
             longitude = longitude,
-            eventType = "PARKED"
+            eventType = EventType.PARKED
         )
 
         val vehicle = createSampleVehicle(licensePlate)
@@ -435,7 +436,7 @@ class VehicleServiceTest {
             licensePlate = licensePlate,
             latitude = latitude,
             longitude = longitude,
-            eventType = "PARKED"
+            eventType = EventType.PARKED
         )
 
         val vehicle = createSampleVehicle(licensePlate)
@@ -457,7 +458,7 @@ class VehicleServiceTest {
             licensePlate = licensePlate,
             latitude = latitude,
             longitude = longitude,
-            eventType = "PARKED"
+            eventType = EventType.PARKED
         )
 
         val vehicle = createSampleVehicle(licensePlate)
@@ -476,7 +477,7 @@ class VehicleServiceTest {
         // Arrange
         val licensePlate = "ZUL0001"
         val exitTimeStr = "2025-01-01T14:00:00.000Z"
-        val exitEvent = ExitEventDTO(licensePlate = licensePlate, exitTime = exitTimeStr, eventType = "EXIT")
+        val exitEvent = ExitEventDTO(licensePlate = licensePlate, exitTime = exitTimeStr, eventType = EventType.EXIT)
 
         whenever(vehicleRepository.findByLicensePlate(licensePlate)).thenReturn(Optional.empty())
 
@@ -489,7 +490,7 @@ class VehicleServiceTest {
         // Arrange
         val licensePlate = "ZUL0001"
         val exitTimeStr = "2025-01-01T14:00:00.000Z"
-        val exitEvent = ExitEventDTO(licensePlate = licensePlate, exitTime = exitTimeStr, eventType = "EXIT")
+        val exitEvent = ExitEventDTO(licensePlate = licensePlate, exitTime = exitTimeStr, eventType = EventType.EXIT)
 
         val vehicle = createSampleVehicle(licensePlate)
 
@@ -505,7 +506,7 @@ class VehicleServiceTest {
         // Arrange
         val licensePlate = "ZUL0001"
         val entryTimeStr = "2025-01-01T12:00:00.000Z"
-        val entryEvent = EntryEventDTO(licensePlate = licensePlate, entryTime = entryTimeStr, eventType = "ENTRY")
+        val entryEvent = EntryEventDTO(licensePlate = licensePlate, entryTime = entryTimeStr, eventType = EventType.ENTRY)
 
         // Mock sectorService to return true for areAllSectorsFull
         whenever(sectorService.areAllSectorsFull()).thenReturn(true)
@@ -522,7 +523,7 @@ class VehicleServiceTest {
         val expectedDateTime = ZonedDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_DATE_TIME).toLocalDateTime()
 
         // Create a test entry event to use the private parseDateTime method
-        val entryEvent = EntryEventDTO(licensePlate = "ZUL0001", entryTime = dateTimeStr, eventType = "ENTRY")
+        val entryEvent = EntryEventDTO(licensePlate = "ZUL0001", entryTime = dateTimeStr, eventType = EventType.ENTRY)
 
         // Mock dependencies to avoid NullPointerExceptions
         whenever(sectorService.areAllSectorsFull()).thenReturn(false)
@@ -546,7 +547,7 @@ class VehicleServiceTest {
         val expectedDateTime = LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 
         // Create a test entry event to use the private parseDateTime method
-        val entryEvent = EntryEventDTO(licensePlate = "ZUL0001", entryTime = dateTimeStr, eventType = "ENTRY")
+        val entryEvent = EntryEventDTO(licensePlate = "ZUL0001", entryTime = dateTimeStr, eventType = EventType.ENTRY)
 
         // Mock dependencies to avoid NullPointerExceptions
         whenever(sectorService.areAllSectorsFull()).thenReturn(false)

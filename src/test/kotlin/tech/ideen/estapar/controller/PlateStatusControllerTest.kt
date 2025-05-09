@@ -16,10 +16,11 @@ import tech.ideen.estapar.api.dto.plate.PlateStatusRequestDTO
 import tech.ideen.estapar.api.dto.plate.PlateStatusResponseDTO
 import tech.ideen.estapar.api.dto.webhook.EntryEventDTO
 import tech.ideen.estapar.api.dto.webhook.ParkedEventDTO
+import tech.ideen.estapar.config.EstaparTestContainer
 import tech.ideen.estapar.domain.model.EventType
 
 @MicronautTest
-class PlateStatusControllerTest : EstaparControllerTestContainer(){
+class PlateStatusControllerTest : EstaparTestContainer(){
 
     @Inject
     @field:Client("/")

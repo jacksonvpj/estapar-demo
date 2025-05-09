@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.ideen.estapar.api.dto.revenue.RevenueRequestDTO
 import tech.ideen.estapar.api.dto.revenue.RevenueResponseDTO
+import tech.ideen.estapar.config.EstaparTestContainer
 import tech.ideen.estapar.service.SectorService
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -23,7 +24,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Optional
 
 @MicronautTest
-class RevenueControllerTest: EstaparControllerTestContainer() {
+class RevenueTest: EstaparTestContainer() {
 
     @Inject
     @field:Client("/")

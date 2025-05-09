@@ -16,12 +16,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tech.ideen.estapar.api.dto.spot.SpotStatusRequestDTO
 import tech.ideen.estapar.api.dto.spot.SpotStatusResponseDTO
+import tech.ideen.estapar.config.EstaparTestContainer
 import tech.ideen.estapar.service.SpotService
 import java.time.LocalDateTime
 import java.util.Optional
 
 @MicronautTest
-class SpotStatusControllerTest : EstaparControllerTestContainer(){
+class SpotStatusTest : EstaparTestContainer(){
 
     @Inject
     @field:Client("/")

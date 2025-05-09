@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import io.micronaut.core.annotation.Introspected
 import io.micronaut.serde.annotation.Serdeable
 import io.swagger.v3.oas.annotations.media.Schema
+import tech.ideen.estapar.domain.model.EventType
 
 /**
  * Base class for all webhook event DTOs.
@@ -30,7 +31,7 @@ abstract class WebhookEventDTO {
 
     @get:JsonProperty("event_type")
     @get:Schema(description = "Type of event", required = true, example = "ENTRY")
-    abstract val eventType: String
+    abstract val eventType: EventType
 }
 
 /**
@@ -51,7 +52,7 @@ data class EntryEventDTO(
 
     @JsonProperty("event_type")
     @Schema(description = "Type of event", required = true, example = "ENTRY")
-    override val eventType: String = "ENTRY"
+    override val eventType: EventType = EventType.ENTRY
 ) : WebhookEventDTO()
 
 /**
@@ -76,7 +77,7 @@ data class ParkedEventDTO(
 
     @JsonProperty("event_type")
     @Schema(description = "Type of event", required = true, example = "PARKED")
-    override val eventType: String = "PARKED"
+    override val eventType: EventType = EventType.PARKED
 ) : WebhookEventDTO()
 
 /**
@@ -97,5 +98,5 @@ data class ExitEventDTO(
 
     @JsonProperty("event_type")
     @Schema(description = "Type of event", required = true, example = "EXIT")
-    override val eventType: String = "EXIT"
+    override val eventType: EventType = EventType.EXIT
 ) : WebhookEventDTO()

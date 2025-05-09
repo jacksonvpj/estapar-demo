@@ -13,6 +13,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
+import tech.ideen.estapar.config.EstaparTestContainer
 import tech.ideen.estapar.domain.model.ParkingSession
 import tech.ideen.estapar.domain.model.Sector
 import tech.ideen.estapar.domain.model.Spot
@@ -25,7 +26,7 @@ import java.time.LocalTime
 import java.util.Optional
 
 @MicronautTest
-class SpotServiceTest {
+class SpotServiceTest : EstaparTestContainer()  {
 
     private lateinit var spotRepository: SpotRepository
     private lateinit var parkingSessionRepository: ParkingSessionRepository
