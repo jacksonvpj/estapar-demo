@@ -1,7 +1,7 @@
 package tech.ideen.estapar.domain.model
 
+import io.micronaut.core.annotation.Nullable
 import io.micronaut.data.annotation.DateCreated
-import io.micronaut.data.annotation.DateUpdated
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.annotation.Relation
@@ -16,14 +16,12 @@ class Garage {
     @field:Id
     var id: UUID = UUID.randomUUID()
 
+    @Nullable
     @field:Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "garage")
     var sectors: MutableList<Sector> = mutableListOf()
 
     @field:DateCreated
     var createdAt: LocalDateTime? = LocalDateTime.now()
-
-    @field:DateUpdated
-    var updatedAt: LocalDateTime? = null
 
     /**
      * Adds a sector to this garage.

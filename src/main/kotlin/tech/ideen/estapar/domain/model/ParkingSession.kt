@@ -1,5 +1,6 @@
 package tech.ideen.estapar.domain.model
 
+import io.micronaut.core.annotation.Nullable
 import io.micronaut.data.annotation.DateCreated
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
@@ -35,23 +36,21 @@ class ParkingSession {
     @field:Relation(value = Relation.Kind.MANY_TO_ONE)
     var vehicle: Vehicle? = null
 
+    @Nullable
     @field:Relation(value = Relation.Kind.MANY_TO_ONE)
     var parkedSpot: Spot? = null
 
     @field:DateCreated
     var createdAt: LocalDateTime? = null
 
-    constructor()
-
     constructor(entryTime: LocalDateTime, vehicle: Vehicle) {
         this.entryTime = entryTime
         this.vehicle = vehicle
     }
 
-    constructor(entryTime: LocalDateTime, active: Boolean, vehicle: Vehicle?, parkedSpot: Spot?) {
-        this.entryTime = entryTime
+    constructor(entryTime: LocalDateTime, active: Boolean, vehicle: Vehicle, parkedSpot: Spot?) :
+        this(entryTime, vehicle) {
         this.active = active
-        this.vehicle = vehicle
         this.parkedSpot = parkedSpot
     }
 

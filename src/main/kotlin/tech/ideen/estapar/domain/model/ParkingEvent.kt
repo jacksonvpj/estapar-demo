@@ -1,6 +1,7 @@
 package tech.ideen.estapar.domain.model
 
 import io.micronaut.core.annotation.NonNull
+import io.micronaut.core.annotation.Nullable
 import io.micronaut.data.annotation.DateCreated
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
@@ -27,7 +28,7 @@ class ParkingEvent {
     @field:Relation(value = Relation.Kind.MANY_TO_ONE)
     var vehicle: Vehicle? = null
 
-    @NonNull
+    @Nullable
     @field:Relation(value = Relation.Kind.MANY_TO_ONE)
     var spot: Spot? = null
 
