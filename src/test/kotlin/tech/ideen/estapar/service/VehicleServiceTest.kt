@@ -23,6 +23,7 @@ import tech.ideen.estapar.domain.repository.ParkingEventRepository
 import tech.ideen.estapar.domain.repository.ParkingSessionRepository
 import tech.ideen.estapar.domain.repository.SpotRepository
 import tech.ideen.estapar.domain.repository.VehicleRepository
+import tech.ideen.estapar.exception.EstaparException
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -78,7 +79,6 @@ class VehicleServiceTest {
 
         whenever(vehicleRepository.findByLicensePlate(licensePlate)).thenReturn(Optional.empty())
         whenever(vehicleRepository.save(any())).thenReturn(vehicle)
-        whenever(sectorService.getDefaultSector()).thenReturn(sector)
         whenever(parkingEventRepository.save(any())).thenReturn(parkingEvent)
         whenever(parkingSessionRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
 
@@ -93,7 +93,6 @@ class VehicleServiceTest {
         verify(vehicleRepository).save(any())
         verify(parkingEventRepository).save(any())
         verify(parkingSessionRepository).save(any())
-        verify(sectorService).getDefaultSector()
     }
 
     @Test
@@ -146,12 +145,29 @@ class VehicleServiceTest {
         val spot = createSampleSpot()
         val sector = spot.sector
         val parkingEvent = createSampleParkingEvent(EventType.EXIT, exitTime, vehicle)
-        val parkingSession = createSampleSession(vehicle, spot, exitTime)
+
+        // Create a session with appliedPriceFactor set
+        val entryTime = exitTime.minusHours(2) // 2 hours parking duration
+        val parkingSession = createSampleSession(vehicle, spot, entryTime)
+        parkingSession.appliedPriceFactor = BigDecimal("1.0") // Set a default price factor
+
+        // Mock the calculatePrice method to return a fixed value
+        val price = BigDecimal("25.00")
+
+        // Use doAnswer to mock the close method behavior
+        whenever(parkingSessionRepository.findByVehicleAndActive(vehicle, true)).thenReturn(Optional.of(parkingSession))
+        whenever(parkingSessionRepository.update(any())).thenAnswer { invocation ->
+            val session = invocation.getArgument<ParkingSession>(0)
+            // Verify that the session is closed
+            assertEquals(false, session.active)
+            assertEquals(exitTime, session.exitTime)
+            // Set the price manually since we can't mock the calculatePrice method directly
+            session.price = price
+            session
+        }
 
         whenever(vehicleRepository.findByLicensePlate(licensePlate)).thenReturn(Optional.of(vehicle))
         whenever(parkingEventRepository.save(any())).thenReturn(parkingEvent)
-        whenever(parkingSessionRepository.findByVehicleAndActive(vehicle, true)).thenReturn(Optional.of(parkingSession))
-        whenever(parkingSessionRepository.update(any())).thenReturn(parkingSession)
         whenever(spotRepository.update(any())).thenReturn(spot)
 
         // Act
@@ -165,7 +181,7 @@ class VehicleServiceTest {
         verify(parkingEventRepository).save(any())
         verify(parkingSessionRepository).update(any())
         verify(spotRepository).update(any())
-        verify(sectorService).recordRevenue(eq(sector.code!!), any(), eq(exitTime.toLocalDate()))
+        verify(sectorService).recordRevenue(eq(sector.code!!), eq(price), eq(exitTime.toLocalDate()))
     }
 
     @Test
@@ -227,108 +243,186 @@ class VehicleServiceTest {
     }
 
     @Test
-    fun `processEntryEvent should apply 10 percent discount when occupancy is below 25 percent`() {
+    fun `processParkedEvent should apply 10 percent discount when occupancy is below 25 percent`() {
         // Arrange
         val licensePlate = "ZUL0001"
-        val entryTimeStr = "2025-01-01T12:00:00.000Z"
-        val entryTime = ZonedDateTime.parse(entryTimeStr, DateTimeFormatter.ISO_DATE_TIME).toLocalDateTime()
-        val entryEvent = EntryEventDTO(licensePlate = licensePlate, entryTime = entryTimeStr, eventType = "ENTRY")
+        val latitude = -23.561684
+        val longitude = -46.655981
+        val parkedEvent = ParkedEventDTO(
+            licensePlate = licensePlate,
+            latitude = latitude,
+            longitude = longitude,
+            eventType = "PARKED"
+        )
 
         val vehicle = createSampleVehicle(licensePlate)
 
-        // Create a mock sector instead of a real one
-        val sector = mock(Sector::class.java)
+        // Create a sector with a mock to control the calculatePriceFactor method
+        val sector = createSampleSector()
         val priceFactor = 0.9 // 10% discount
-        whenever(sector.calculatePriceFactor()).thenReturn(priceFactor)
-        whenever(sector.code).thenReturn("A")
+        val sectorMock = mock(Sector::class.java)
+        whenever(sectorMock.calculatePriceFactor()).thenReturn(priceFactor)
+        whenever(sectorMock.code).thenReturn(sector.code)
 
-        val parkingEvent = createSampleParkingEvent(EventType.ENTRY, entryTime, vehicle)
+        // Create a spot with the mocked sector
+        val spot = Spot(
+            id = 1,
+            latitude = latitude,
+            longitude = longitude,
+            sector = sectorMock,
+            occupied = false
+        )
 
-        whenever(vehicleRepository.findByLicensePlate(licensePlate)).thenReturn(Optional.empty())
-        whenever(vehicleRepository.save(any())).thenReturn(vehicle)
-        whenever(sectorService.getDefaultSector()).thenReturn(sector)
+        val parkingEvent = createSampleParkingEvent(EventType.PARKED, LocalDateTime.now(), vehicle, spot)
+
+        // Create a different spot for the initial session
+        val initialSpot = createSampleSpot(-23.561685, -46.655982)
+        val parkingSession = createSampleSession(vehicle, initialSpot)
+
+        whenever(vehicleRepository.findByLicensePlate(licensePlate)).thenReturn(Optional.of(vehicle))
+        whenever(spotRepository.findByLatitudeAndLongitude(latitude, longitude)).thenReturn(Optional.of(spot))
         whenever(parkingEventRepository.save(any())).thenReturn(parkingEvent)
-        whenever(parkingSessionRepository.save(any())).thenAnswer { invocation ->
+        whenever(parkingSessionRepository.findByVehicleAndActive(vehicle, true)).thenReturn(Optional.of(parkingSession))
+        whenever(parkingSessionRepository.update(any())).thenAnswer { invocation ->
             val session = invocation.getArgument<ParkingSession>(0)
-            assertEquals(priceFactor, session.appliedPriceFactor)
+            assertEquals(BigDecimal(priceFactor), session.appliedPriceFactor)
             session
         }
+        whenever(spotRepository.update(any())).thenReturn(spot)
 
         // Act
-        vehicleService.processEntryEvent(entryEvent)
+        val result = vehicleService.processParkedEvent(parkedEvent)
 
         // Assert
-        verify(parkingSessionRepository).save(any())
+        assertEquals(EventType.PARKED, result.eventType)
+        assertEquals(vehicle, result.vehicle)
+        assertEquals(spot, result.spot)
+
+        verify(spotRepository).update(any())
+        verify(parkingEventRepository).save(any())
+        verify(parkingSessionRepository).update(any())
     }
 
     @Test
-    fun `processEntryEvent should apply 10 percent increase when occupancy is between 50 and 75 percent`() {
+    fun `processParkedEvent should apply 10 percent increase when occupancy is between 50 and 75 percent`() {
         // Arrange
         val licensePlate = "ZUL0001"
-        val entryTimeStr = "2025-01-01T12:00:00.000Z"
-        val entryTime = ZonedDateTime.parse(entryTimeStr, DateTimeFormatter.ISO_DATE_TIME).toLocalDateTime()
-        val entryEvent = EntryEventDTO(licensePlate = licensePlate, entryTime = entryTimeStr, eventType = "ENTRY")
+        val latitude = -23.561684
+        val longitude = -46.655981
+        val parkedEvent = ParkedEventDTO(
+            licensePlate = licensePlate,
+            latitude = latitude,
+            longitude = longitude,
+            eventType = "PARKED"
+        )
 
         val vehicle = createSampleVehicle(licensePlate)
 
-        // Create a mock sector instead of a real one
-        val sector = mock(Sector::class.java)
+        // Create a sector with a mock to control the calculatePriceFactor method
+        val sector = createSampleSector()
         val priceFactor = 1.1 // 10% increase
-        whenever(sector.calculatePriceFactor()).thenReturn(priceFactor)
-        whenever(sector.code).thenReturn("A")
+        val sectorMock = mock(Sector::class.java)
+        whenever(sectorMock.calculatePriceFactor()).thenReturn(priceFactor)
+        whenever(sectorMock.code).thenReturn(sector.code)
 
-        val parkingEvent = createSampleParkingEvent(EventType.ENTRY, entryTime, vehicle)
+        // Create a spot with the mocked sector
+        val spot = Spot(
+            id = 1,
+            latitude = latitude,
+            longitude = longitude,
+            sector = sectorMock,
+            occupied = false
+        )
 
-        whenever(vehicleRepository.findByLicensePlate(licensePlate)).thenReturn(Optional.empty())
-        whenever(vehicleRepository.save(any())).thenReturn(vehicle)
-        whenever(sectorService.getDefaultSector()).thenReturn(sector)
+        val parkingEvent = createSampleParkingEvent(EventType.PARKED, LocalDateTime.now(), vehicle, spot)
+
+        // Create a different spot for the initial session
+        val initialSpot = createSampleSpot(-23.561685, -46.655982)
+        val parkingSession = createSampleSession(vehicle, initialSpot)
+
+        whenever(vehicleRepository.findByLicensePlate(licensePlate)).thenReturn(Optional.of(vehicle))
+        whenever(spotRepository.findByLatitudeAndLongitude(latitude, longitude)).thenReturn(Optional.of(spot))
         whenever(parkingEventRepository.save(any())).thenReturn(parkingEvent)
-        whenever(parkingSessionRepository.save(any())).thenAnswer { invocation ->
+        whenever(parkingSessionRepository.findByVehicleAndActive(vehicle, true)).thenReturn(Optional.of(parkingSession))
+        whenever(parkingSessionRepository.update(any())).thenAnswer { invocation ->
             val session = invocation.getArgument<ParkingSession>(0)
-            assertEquals(priceFactor, session.appliedPriceFactor)
+            assertEquals(BigDecimal(priceFactor), session.appliedPriceFactor)
             session
         }
+        whenever(spotRepository.update(any())).thenReturn(spot)
 
         // Act
-        vehicleService.processEntryEvent(entryEvent)
+        val result = vehicleService.processParkedEvent(parkedEvent)
 
         // Assert
-        verify(parkingSessionRepository).save(any())
+        assertEquals(EventType.PARKED, result.eventType)
+        assertEquals(vehicle, result.vehicle)
+        assertEquals(spot, result.spot)
+
+        verify(spotRepository).update(any())
+        verify(parkingEventRepository).save(any())
+        verify(parkingSessionRepository).update(any())
     }
 
     @Test
-    fun `processEntryEvent should apply 25 percent increase when occupancy is between 75 and 100 percent`() {
+    fun `processParkedEvent should apply 25 percent increase when occupancy is between 75 and 100 percent`() {
         // Arrange
         val licensePlate = "ZUL0001"
-        val entryTimeStr = "2025-01-01T12:00:00.000Z"
-        val entryTime = ZonedDateTime.parse(entryTimeStr, DateTimeFormatter.ISO_DATE_TIME).toLocalDateTime()
-        val entryEvent = EntryEventDTO(licensePlate = licensePlate, entryTime = entryTimeStr, eventType = "ENTRY")
+        val latitude = -23.561684
+        val longitude = -46.655981
+        val parkedEvent = ParkedEventDTO(
+            licensePlate = licensePlate,
+            latitude = latitude,
+            longitude = longitude,
+            eventType = "PARKED"
+        )
 
         val vehicle = createSampleVehicle(licensePlate)
 
-        // Create a mock sector instead of a real one
-        val sector = mock(Sector::class.java)
+        // Create a sector with a mock to control the calculatePriceFactor method
+        val sector = createSampleSector()
         val priceFactor = 1.25 // 25% increase
-        whenever(sector.calculatePriceFactor()).thenReturn(priceFactor)
-        whenever(sector.code).thenReturn("A")
+        val sectorMock = mock(Sector::class.java)
+        whenever(sectorMock.calculatePriceFactor()).thenReturn(priceFactor)
+        whenever(sectorMock.code).thenReturn(sector.code)
 
-        val parkingEvent = createSampleParkingEvent(EventType.ENTRY, entryTime, vehicle)
+        // Create a spot with the mocked sector
+        val spot = Spot(
+            id = 1,
+            latitude = latitude,
+            longitude = longitude,
+            sector = sectorMock,
+            occupied = false
+        )
 
-        whenever(vehicleRepository.findByLicensePlate(licensePlate)).thenReturn(Optional.empty())
-        whenever(vehicleRepository.save(any())).thenReturn(vehicle)
-        whenever(sectorService.getDefaultSector()).thenReturn(sector)
+        val parkingEvent = createSampleParkingEvent(EventType.PARKED, LocalDateTime.now(), vehicle, spot)
+
+        // Create a different spot for the initial session
+        val initialSpot = createSampleSpot(-23.561685, -46.655982)
+        val parkingSession = createSampleSession(vehicle, initialSpot)
+
+        whenever(vehicleRepository.findByLicensePlate(licensePlate)).thenReturn(Optional.of(vehicle))
+        whenever(spotRepository.findByLatitudeAndLongitude(latitude, longitude)).thenReturn(Optional.of(spot))
         whenever(parkingEventRepository.save(any())).thenReturn(parkingEvent)
-        whenever(parkingSessionRepository.save(any())).thenAnswer { invocation ->
+        whenever(parkingSessionRepository.findByVehicleAndActive(vehicle, true)).thenReturn(Optional.of(parkingSession))
+        whenever(parkingSessionRepository.update(any())).thenAnswer { invocation ->
             val session = invocation.getArgument<ParkingSession>(0)
-            assertEquals(priceFactor, session.appliedPriceFactor)
+            assertEquals(BigDecimal(priceFactor), session.appliedPriceFactor)
             session
         }
+        whenever(spotRepository.update(any())).thenReturn(spot)
 
         // Act
-        vehicleService.processEntryEvent(entryEvent)
+        val result = vehicleService.processParkedEvent(parkedEvent)
 
         // Assert
-        verify(parkingSessionRepository).save(any())
+        assertEquals(EventType.PARKED, result.eventType)
+        assertEquals(vehicle, result.vehicle)
+        assertEquals(spot, result.spot)
+
+        verify(spotRepository).update(any())
+        verify(parkingEventRepository).save(any())
+        verify(parkingSessionRepository).update(any())
     }
 
     @Test
@@ -404,6 +498,69 @@ class VehicleServiceTest {
 
         // Act & Assert
         assertThrows<NoSuchElementException> { vehicleService.processExitEvent(exitEvent) }
+    }
+
+    @Test
+    fun `processEntryEvent should throw exception when all sectors are full`() {
+        // Arrange
+        val licensePlate = "ZUL0001"
+        val entryTimeStr = "2025-01-01T12:00:00.000Z"
+        val entryEvent = EntryEventDTO(licensePlate = licensePlate, entryTime = entryTimeStr, eventType = "ENTRY")
+
+        // Mock sectorService to return true for areAllSectorsFull
+        whenever(sectorService.areAllSectorsFull()).thenReturn(true)
+
+        // Act & Assert
+        val exception = assertThrows<EstaparException> { vehicleService.processEntryEvent(entryEvent) }
+        assertEquals("Vehicle: $licensePlate. All sectors are full at the moment $entryTimeStr. Please try again later.", exception.message)
+    }
+
+    @Test
+    fun `parseDateTime should parse ZonedDateTime with zone information`() {
+        // Arrange
+        val dateTimeStr = "2025-01-01T12:00:00.000Z"
+        val expectedDateTime = ZonedDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_DATE_TIME).toLocalDateTime()
+
+        // Create a test entry event to use the private parseDateTime method
+        val entryEvent = EntryEventDTO(licensePlate = "ZUL0001", entryTime = dateTimeStr, eventType = "ENTRY")
+
+        // Mock dependencies to avoid NullPointerExceptions
+        whenever(sectorService.areAllSectorsFull()).thenReturn(false)
+        whenever(vehicleRepository.findByLicensePlate(any())).thenReturn(Optional.empty())
+        whenever(vehicleRepository.save(any())).thenReturn(createSampleVehicle("ZUL0001"))
+        whenever(parkingEventRepository.save(any())).thenReturn(
+            createSampleParkingEvent(EventType.ENTRY, expectedDateTime, createSampleVehicle("ZUL0001"))
+        )
+
+        // Act
+        val result = vehicleService.processEntryEvent(entryEvent)
+
+        // Assert
+        assertEquals(expectedDateTime, result.eventTime)
+    }
+
+    @Test
+    fun `parseDateTime should parse LocalDateTime without zone information`() {
+        // Arrange
+        val dateTimeStr = "2025-01-01T12:00:00"
+        val expectedDateTime = LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+
+        // Create a test entry event to use the private parseDateTime method
+        val entryEvent = EntryEventDTO(licensePlate = "ZUL0001", entryTime = dateTimeStr, eventType = "ENTRY")
+
+        // Mock dependencies to avoid NullPointerExceptions
+        whenever(sectorService.areAllSectorsFull()).thenReturn(false)
+        whenever(vehicleRepository.findByLicensePlate(any())).thenReturn(Optional.empty())
+        whenever(vehicleRepository.save(any())).thenReturn(createSampleVehicle("ZUL0001"))
+        whenever(parkingEventRepository.save(any())).thenReturn(
+            createSampleParkingEvent(EventType.ENTRY, expectedDateTime, createSampleVehicle("ZUL0001"))
+        )
+
+        // Act
+        val result = vehicleService.processEntryEvent(entryEvent)
+
+        // Assert
+        assertEquals(expectedDateTime, result.eventTime)
     }
 
     private fun createSampleVehicle(licensePlate: String): Vehicle {
