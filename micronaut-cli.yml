@@ -1,0 +1,6 @@
+applicationType: default
+defaultPackage: tech.ideen.estapar
+testFramework: junit
+sourceLanguage: kotlin
+buildTool: gradle_kotlin
+features: [ app-name, data, data-jdbc, flyway, gradle, http-client, jdbc-hikari, junit, kapt, kotlin, kotlin-application, logback, micronaut-aot, micronaut-build, micronaut-http-validation, netty-server, postgres, rabbitmq, readme, serialization-jackson, shade, static-resources, testcontainers, validation, yaml, yaml-build ]

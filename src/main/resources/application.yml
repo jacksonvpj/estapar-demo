@@ -1,0 +1,36 @@
+micronaut:
+  server:
+    port: 3003
+  application:
+    name: estapar-demo
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
+  health:
+    monitor:
+      enabled: true
+
+datasources:
+  default:
+    url: ${JDBC_URL:`jdbc:postgresql://localhost:5432/estapar`}
+    username: ${JDBC_USER:postgres}
+    password: ${JDBC_PASSWORD:postgres}
+    driverClassName: org.postgresql.Driver
+    db-type: postgres
+    dialect: POSTGRES
+
+flyway:
+  datasources:
+    default:
+      enabled: true
+      baseline-on-migrate: true
+      locations:
+        - classpath:db/migration
+
+garage-simulator:
+  url: ${GARAGE_SIMULATOR_URL:http://localhost:3000}
