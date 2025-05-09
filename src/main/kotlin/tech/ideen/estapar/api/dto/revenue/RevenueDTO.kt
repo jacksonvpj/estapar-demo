@@ -28,6 +28,8 @@ data class RevenueRequestDTO(
  */
 @Introspected
 @Schema(description = "Response with revenue information")
+@Serdeable.Serializable
+@Serdeable.Deserializable
 data class RevenueResponseDTO(
     @JsonProperty("amount")
     @Schema(description = "Revenue amount", required = true, example = "1250.50")

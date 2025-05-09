@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import io.micronaut.core.annotation.Introspected
+import io.micronaut.serde.annotation.Serdeable
 import io.swagger.v3.oas.annotations.media.Schema
 
 /**
@@ -37,6 +38,8 @@ abstract class WebhookEventDTO {
  */
 @Introspected
 @Schema(description = "Event for vehicle entering the garage")
+@Serdeable.Serializable
+@Serdeable.Deserializable
 data class EntryEventDTO(
     @JsonProperty("license_plate")
     @Schema(description = "Vehicle license plate", required = true, example = "ZUL0001")
@@ -56,6 +59,8 @@ data class EntryEventDTO(
  */
 @Introspected
 @Schema(description = "Event for vehicle parked in a spot")
+@Serdeable.Serializable
+@Serdeable.Deserializable
 data class ParkedEventDTO(
     @JsonProperty("license_plate")
     @Schema(description = "Vehicle license plate", required = true, example = "ZUL0001")
@@ -79,6 +84,8 @@ data class ParkedEventDTO(
  */
 @Introspected
 @Schema(description = "Event for vehicle exiting the garage")
+@Serdeable.Serializable
+@Serdeable.Deserializable
 data class ExitEventDTO(
     @JsonProperty("license_plate")
     @Schema(description = "Vehicle license plate", required = true, example = "ZUL0001")

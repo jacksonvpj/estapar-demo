@@ -2,6 +2,7 @@ package tech.ideen.estapar.api.dto.spot
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.micronaut.core.annotation.Introspected
+import io.micronaut.serde.annotation.Serdeable
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
 
@@ -10,6 +11,8 @@ import java.time.LocalDateTime
  */
 @Introspected
 @Schema(description = "Request for spot status by location")
+@Serdeable.Serializable
+@Serdeable.Deserializable
 data class SpotStatusRequestDTO(
     @JsonProperty("lat")
     @Schema(description = "Latitude of the parking spot", required = true, example = "-23.561684")
@@ -25,6 +28,8 @@ data class SpotStatusRequestDTO(
  */
 @Introspected
 @Schema(description = "Response with spot status information")
+@Serdeable.Serializable
+@Serdeable.Deserializable
 data class SpotStatusResponseDTO(
     @JsonProperty("occupied")
     @Schema(description = "Whether the spot is occupied", required = true, example = "true")

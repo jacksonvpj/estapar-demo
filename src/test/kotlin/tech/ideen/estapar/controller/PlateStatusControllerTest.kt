@@ -25,7 +25,7 @@ import java.time.LocalDateTime
 @SerdeImport(PlateStatusResponseDTO::class)
 
 @MicronautTest
-class PlateStatusControllerTest {
+class PlateStatusControllerTest : EstaparControllerTestContainer(){
 
     @Inject
     @field:Client("/")

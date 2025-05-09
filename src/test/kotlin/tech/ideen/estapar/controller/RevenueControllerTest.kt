@@ -9,6 +9,7 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -22,16 +23,22 @@ import java.time.format.DateTimeFormatter
 import java.util.Optional
 
 @MicronautTest
-class RevenueControllerTest {
+class RevenueControllerTest: EstaparControllerTestContainer() {
 
     @Inject
     @field:Client("/")
     lateinit var client: HttpClient
 
+    @AfterAll
+    fun cleanup() {
+        postgresContainer.stop()
+        wireMockServer.stop()
+    }
+
     @Test
     fun `should return revenue when sector and date exist with revenue`() {
         // Arrange
-        val sectorCode = "TEST"
+        val sectorCode = "A" // Using sector A from the garage data
         val date = LocalDate.now()
         val dateStr = date.format(DateTimeFormatter.ISO_DATE)
 
@@ -48,14 +55,15 @@ class RevenueControllerTest {
 
         val responseBody = response.body()
         assertNotNull(responseBody)
-        assertEquals(BigDecimal("150.75"), responseBody.amount)
+        // Sector A has base_price 40.5 and we're assuming 5 occupied spots
+        assertEquals(BigDecimal("202.5"), responseBody.amount)
         assertEquals("BRL", responseBody.currency)
     }
 
     @Test
     fun `should return zero revenue when sector exists but no revenue for date`() {
         // Arrange
-        val sectorCode = "TEST"
+        val sectorCode = "B" // Using sector B from the garage data
         val date = LocalDate.now().plusDays(30) // Future date with no revenue
         val dateStr = date.format(DateTimeFormatter.ISO_DATE)
 
@@ -79,7 +87,7 @@ class RevenueControllerTest {
     @Test
     fun `should return 404 when sector does not exist`() {
         // Arrange
-        val nonExistentSectorCode = "NONEXISTENT"
+        val nonExistentSectorCode = "NONEXISTENT" // This sector doesn't exist in the garage data
         val date = LocalDate.now()
         val dateStr = date.format(DateTimeFormatter.ISO_DATE)
 
@@ -100,21 +108,38 @@ class RevenueControllerTest {
 @Singleton
 @Replaces(SectorService::class)
 class MockSectorService {
+    // Hardcoded garage data based on the JSON provided in the issue description
+    private val garageData = mapOf(
+        "A" to GarageSector("A", BigDecimal("40.5"), 10),
+        "B" to GarageSector("B", BigDecimal("4.1"), 20)
+    )
 
     fun getRevenue(sectorCode: String, date: LocalDate): Optional<MockRevenue> {
+        println("[DEBUG_LOG] Getting revenue for sector: $sectorCode, date: $date")
+
+        val sector = garageData[sectorCode]
+        println("[DEBUG_LOG] Found sector: $sector")
+
         return when {
-            sectorCode == "TEST" && !date.isAfter(LocalDate.now()) -> {
-                // Return revenue for current date or past dates
-                Optional.of(MockRevenue(BigDecimal("150.75"), "BRL"))
+            sector != null && !date.isAfter(LocalDate.now()) -> {
+                // Calculate revenue based on sector data
+                val basePrice = sector.basePrice
+                val occupiedSpots = 5 // Assuming 5 spots were occupied for this test
+                val revenue = basePrice.multiply(BigDecimal(occupiedSpots))
+
+                println("[DEBUG_LOG] Returning revenue: $revenue BRL")
+                Optional.of(MockRevenue(revenue, "BRL"))
             }
 
-            sectorCode == "TEST" -> {
+            sector != null -> {
                 // Return empty for future dates
+                println("[DEBUG_LOG] Future date, returning empty revenue")
                 Optional.empty()
             }
 
             else -> {
                 // Throw exception for non-existent sectors
+                println("[DEBUG_LOG] Sector not found: $sectorCode")
                 throw NoSuchElementException("Sector not found: $sectorCode")
             }
         }
@@ -122,7 +147,7 @@ class MockSectorService {
 
     // Stub methods for other SectorService methods that might be called
     fun getDefaultSector(): Any? = null
-    fun getSectorByCode(code: String): Any? = null
+    fun getSectorByCode(code: String): Any? = garageData[code]
     fun getSectorByCodeWithSpots(code: String): Any? = null
     fun calculateOccupancyPercentage(code: String): Double = 0.0
     fun isSectorFull(code: String): Boolean = false
@@ -132,3 +157,10 @@ class MockSectorService {
 
 // Simple class to mock Revenue
 class MockRevenue(val amount: BigDecimal, val currency: String)
+
+// Class to represent a garage sector
+data class GarageSector(
+    val code: String,
+    val basePrice: BigDecimal,
+    val maxCapacity: Int
+)

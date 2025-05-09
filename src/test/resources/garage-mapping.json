@@ -1,0 +1,244 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/garage"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "garage": [
+        {
+          "sector": "A",
+          "base_price": 40.5,
+          "max_capacity": 10,
+          "open_hour": "00:00",
+          "close_hour": "23:59",
+          "duration_limit_minutes": 1440
+        },
+        {
+          "sector": "B",
+          "base_price": 4.1,
+          "max_capacity": 20,
+          "open_hour": "08:00",
+          "close_hour": "23:59",
+          "duration_limit_minutes": 60
+        }
+      ],
+      "spots": [
+        {
+          "id": 1,
+          "sector": "A",
+          "lat": -23.561684,
+          "lng": -46.655981,
+          "occupied": false
+        },
+        {
+          "id": 2,
+          "sector": "A",
+          "lat": -23.561664,
+          "lng": -46.655961,
+          "occupied": false
+        },
+        {
+          "id": 3,
+          "sector": "A",
+          "lat": -23.561644,
+          "lng": -46.655941,
+          "occupied": false
+        },
+        {
+          "id": 4,
+          "sector": "A",
+          "lat": -23.561624,
+          "lng": -46.655921,
+          "occupied": false
+        },
+        {
+          "id": 5,
+          "sector": "A",
+          "lat": -23.561604,
+          "lng": -46.655901,
+          "occupied": false
+        },
+        {
+          "id": 6,
+          "sector": "A",
+          "lat": -23.561584,
+          "lng": -46.655881,
+          "occupied": false
+        },
+        {
+          "id": 7,
+          "sector": "A",
+          "lat": -23.561564,
+          "lng": -46.655861,
+          "occupied": false
+        },
+        {
+          "id": 8,
+          "sector": "A",
+          "lat": -23.561544,
+          "lng": -46.655841,
+          "occupied": false
+        },
+        {
+          "id": 9,
+          "sector": "A",
+          "lat": -23.561524,
+          "lng": -46.655821,
+          "occupied": false
+        },
+        {
+          "id": 10,
+          "sector": "A",
+          "lat": -23.561504,
+          "lng": -46.655801,
+          "occupied": false
+        },
+        {
+          "id": 11,
+          "sector": "B",
+          "lat": -23.561484,
+          "lng": -46.655781,
+          "occupied": false
+        },
+        {
+          "id": 12,
+          "sector": "B",
+          "lat": -23.561464,
+          "lng": -46.655761,
+          "occupied": false
+        },
+        {
+          "id": 13,
+          "sector": "B",
+          "lat": -23.561444,
+          "lng": -46.655741,
+          "occupied": false
+        },
+        {
+          "id": 14,
+          "sector": "B",
+          "lat": -23.561424,
+          "lng": -46.655721,
+          "occupied": false
+        },
+        {
+          "id": 15,
+          "sector": "B",
+          "lat": -23.561404,
+          "lng": -46.655701,
+          "occupied": false
+        },
+        {
+          "id": 16,
+          "sector": "B",
+          "lat": -23.561384,
+          "lng": -46.655681,
+          "occupied": false
+        },
+        {
+          "id": 17,
+          "sector": "B",
+          "lat": -23.561364,
+          "lng": -46.655661,
+          "occupied": false
+        },
+        {
+          "id": 18,
+          "sector": "B",
+          "lat": -23.561344,
+          "lng": -46.655641,
+          "occupied": false
+        },
+        {
+          "id": 19,
+          "sector": "B",
+          "lat": -23.561324,
+          "lng": -46.655621,
+          "occupied": false
+        },
+        {
+          "id": 20,
+          "sector": "B",
+          "lat": -23.561304,
+          "lng": -46.655601,
+          "occupied": false
+        },
+        {
+          "id": 21,
+          "sector": "B",
+          "lat": -23.561284,
+          "lng": -46.655581,
+          "occupied": false
+        },
+        {
+          "id": 22,
+          "sector": "B",
+          "lat": -23.561264,
+          "lng": -46.655561,
+          "occupied": false
+        },
+        {
+          "id": 23,
+          "sector": "B",
+          "lat": -23.561244,
+          "lng": -46.655541,
+          "occupied": false
+        },
+        {
+          "id": 24,
+          "sector": "B",
+          "lat": -23.561224,
+          "lng": -46.655521,
+          "occupied": false
+        },
+        {
+          "id": 25,
+          "sector": "B",
+          "lat": -23.561204,
+          "lng": -46.655501,
+          "occupied": false
+        },
+        {
+          "id": 26,
+          "sector": "B",
+          "lat": -23.561184,
+          "lng": -46.655481,
+          "occupied": false
+        },
+        {
+          "id": 27,
+          "sector": "B",
+          "lat": -23.561164,
+          "lng": -46.655461,
+          "occupied": false
+        },
+        {
+          "id": 28,
+          "sector": "B",
+          "lat": -23.561144,
+          "lng": -46.655441,
+          "occupied": false
+        },
+        {
+          "id": 29,
+          "sector": "B",
+          "lat": -23.561124,
+          "lng": -46.655421,
+          "occupied": false
+        },
+        {
+          "id": 30,
+          "sector": "B",
+          "lat": -23.561104,
+          "lng": -46.655401,
+          "occupied": false
+        }
+      ]
+    }
+  }
+}

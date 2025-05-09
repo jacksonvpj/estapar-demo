@@ -17,7 +17,7 @@ import tech.ideen.estapar.api.dto.webhook.ParkedEventDTO
 import tech.ideen.estapar.service.VehicleService
 
 @MicronautTest
-class WebhookControllerTest {
+class WebhookControllerTest : EstaparControllerTestContainer(){
 
     @Inject
     @field:Client("/")

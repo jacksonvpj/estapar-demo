@@ -2,6 +2,7 @@ package tech.ideen.estapar.api.dto.plate
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.micronaut.core.annotation.Introspected
+import io.micronaut.serde.annotation.Serdeable
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -11,6 +12,8 @@ import java.time.LocalDateTime
  */
 @Introspected
 @Schema(description = "Request for vehicle status by license plate")
+@Serdeable.Serializable
+@Serdeable.Deserializable
 data class PlateStatusRequestDTO(
     @JsonProperty("license_plate")
     @Schema(description = "Vehicle license plate", required = true, example = "ZUL0001")
@@ -22,6 +25,8 @@ data class PlateStatusRequestDTO(
  */
 @Introspected
 @Schema(description = "Response with vehicle status information")
+@Serdeable.Serializable
+@Serdeable.Deserializable
 data class PlateStatusResponseDTO(
     @JsonProperty("license_plate")
     @Schema(description = "Vehicle license plate", required = true, example = "ZUL0001")

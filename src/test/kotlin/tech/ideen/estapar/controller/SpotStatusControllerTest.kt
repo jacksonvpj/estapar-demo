@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 import java.util.Optional
 
 @MicronautTest
-class SpotStatusControllerTest {
+class SpotStatusControllerTest : EstaparControllerTestContainer(){
 
     @Inject
     @field:Client("/")

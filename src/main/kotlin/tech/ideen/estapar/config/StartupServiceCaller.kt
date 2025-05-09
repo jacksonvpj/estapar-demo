@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
 
 @Singleton
 class StartupServiceCaller(
-    @Client("http://0.0.0.0:3000") private val httpClient: HttpClient,
+    @Client("\${garage-simulator.url}") private val httpClient: HttpClient,
     private val jsonMapper: JsonMapper,
     private val garageRepository: GarageRepository,
     private val sectorRepository: SectorRepository,
