@@ -21,18 +21,6 @@ class SectorService(
     private val logger = LoggerFactory.getLogger(SectorService::class.java)
 
     /**
-     * Gets the default sector (for now, we'll use the first one).
-     *
-     * @return The default sector
-     * @throws IllegalStateException if no sectors are found
-     */
-    fun getDefaultSector(): Sector {
-        logger.info("Getting default sector")
-        return sectorRepository.findAll().firstOrNull()
-            ?: throw IllegalStateException("No sectors found")
-    }
-
-    /**
      * Gets a sector by its code.
      *
      * @param code The sector code

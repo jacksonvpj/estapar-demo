@@ -2,6 +2,8 @@ package tech.ideen.estapar.service
 
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -34,27 +36,6 @@ class SectorServiceTest {
         sectorService = SectorService(sectorRepository, revenueRepository)
     }
 
-    @Test
-    fun `getDefaultSector should return first sector when sectors exist`() {
-        // Arrange
-        val sector = createSampleSector()
-        whenever(sectorRepository.findAll()).thenReturn(listOf(sector))
-
-        // Act
-        val result = sectorService.getDefaultSector()
-
-        // Assert
-        assertEquals(sector, result)
-    }
-
-    @Test
-    fun `getDefaultSector should throw exception when no sectors exist`() {
-        // Arrange
-        whenever(sectorRepository.findAll()).thenReturn(emptyList())
-
-        // Act & Assert
-        assertThrows<IllegalStateException> { sectorService.getDefaultSector() }
-    }
 
     @Test
     fun `getSectorByCode should return sector when it exists`() {
@@ -75,7 +56,7 @@ class SectorServiceTest {
         whenever(sectorRepository.findByCode("A")).thenReturn(Optional.empty())
 
         // Act & Assert
-        assertThrows<IllegalStateException> { sectorService.getSectorByCode("A") }
+        assertThrows<NoSuchElementException> { sectorService.getSectorByCode("A") }
     }
 
     @Test
@@ -89,6 +70,7 @@ class SectorServiceTest {
             createSpot(4, false, sector)
         )
         sector.spots.addAll(spots)
+        sector.maxCapacity = 4 // Set capacity equal to number of spots
 
         whenever(sectorRepository.findByCode("A")).thenReturn(Optional.of(sector))
 
@@ -96,7 +78,7 @@ class SectorServiceTest {
         val result = sectorService.calculateOccupancyPercentage("A")
 
         // Assert
-        assertEquals(0.5, result) // 2 out of 4 spots are occupied
+        assertEquals(0.5, result) // 2 out of 4 spots are occupied (50%)
     }
 
     @Test
@@ -155,6 +137,225 @@ class SectorServiceTest {
         assertEquals(sector, result.sector)
         verify(revenueRepository, never()).save(any())
         verify(revenueRepository).update(any())
+    }
+
+    @Test
+    fun `getSectorByCodeWithSpots should return sector when it exists`() {
+        // Arrange
+        val sector = createSampleSector()
+        val spots = listOf(
+            createSpot(1, true, sector),
+            createSpot(2, false, sector)
+        )
+        sector.spots.addAll(spots)
+
+        whenever(sectorRepository.findByCode("A")).thenReturn(Optional.of(sector))
+
+        // Act
+        val result = sectorService.getSectorByCodeWithSpots("A")
+
+        // Assert
+        assertEquals(sector, result)
+        assertEquals(2, result.spots.size)
+    }
+
+    @Test
+    fun `getSectorByCodeWithSpots should throw exception when sector does not exist`() {
+        // Arrange
+        whenever(sectorRepository.findByCode("A")).thenReturn(Optional.empty())
+
+        // Act & Assert
+        assertThrows<NoSuchElementException> { sectorService.getSectorByCodeWithSpots("A") }
+    }
+
+    @Test
+    fun `isSectorFull should return true when sector is at full capacity`() {
+        // Arrange
+        val sector = createSampleSector()
+        val spots = listOf(
+            createSpot(1, true, sector),
+            createSpot(2, true, sector)
+        )
+        sector.spots.addAll(spots)
+        sector.maxCapacity = 2 // Set capacity equal to number of spots
+
+        whenever(sectorRepository.findByCode("A")).thenReturn(Optional.of(sector))
+
+        // Act
+        val result = sectorService.isSectorFull("A")
+
+        // Assert
+        assertTrue(result)
+    }
+
+    @Test
+    fun `isSectorFull should return false when sector is not at full capacity`() {
+        // Arrange
+        val sector = createSampleSector()
+        val spots = listOf(
+            createSpot(1, true, sector),
+            createSpot(2, false, sector)
+        )
+        sector.spots.addAll(spots)
+        sector.maxCapacity = 2 // Set capacity equal to number of spots
+
+        whenever(sectorRepository.findByCode("A")).thenReturn(Optional.of(sector))
+
+        // Act
+        val result = sectorService.isSectorFull("A")
+
+        // Assert
+        assertFalse(result)
+    }
+
+    @Test
+    fun `areAllSectorsFull should return true when all sectors are full`() {
+        // Arrange
+        val sector1 = createSampleSector()
+        sector1.code = "A"
+        sector1.maxCapacity = 2
+        val spots1 = listOf(
+            createSpot(1, true, sector1),
+            createSpot(2, true, sector1)
+        )
+        sector1.spots.addAll(spots1)
+
+        val sector2 = createSampleSector()
+        sector2.code = "B"
+        sector2.maxCapacity = 3
+        val spots2 = listOf(
+            createSpot(3, true, sector2),
+            createSpot(4, true, sector2),
+            createSpot(5, true, sector2)
+        )
+        sector2.spots.addAll(spots2)
+
+        whenever(sectorRepository.findAll()).thenReturn(listOf(sector1, sector2))
+
+        // Act
+        val result = sectorService.areAllSectorsFull()
+
+        // Assert
+        assertTrue(result)
+    }
+
+    @Test
+    fun `areAllSectorsFull should return false when at least one sector is not full`() {
+        // Arrange
+        val sector1 = createSampleSector()
+        sector1.code = "A"
+        sector1.maxCapacity = 2
+        val spots1 = listOf(
+            createSpot(1, true, sector1),
+            createSpot(2, true, sector1)
+        )
+        sector1.spots.addAll(spots1)
+
+        val sector2 = createSampleSector()
+        sector2.code = "B"
+        sector2.maxCapacity = 3
+        val spots2 = listOf(
+            createSpot(3, true, sector2),
+            createSpot(4, false, sector2),
+            createSpot(5, true, sector2)
+        )
+        sector2.spots.addAll(spots2)
+
+        whenever(sectorRepository.findAll()).thenReturn(listOf(sector1, sector2))
+
+        // Act
+        val result = sectorService.areAllSectorsFull()
+
+        // Assert
+        assertFalse(result)
+    }
+
+    @Test
+    fun `getRevenue should return revenue when it exists`() {
+        // Arrange
+        val sector = createSampleSector()
+        val date = LocalDate.now()
+        val revenue = Revenue(
+            revenueDate = date,
+            amount = BigDecimal("100.00"),
+            sector = sector
+        )
+
+        whenever(sectorRepository.findByCode("A")).thenReturn(Optional.of(sector))
+        whenever(revenueRepository.findBySectorAndRevenueDate(sector, date)).thenReturn(Optional.of(revenue))
+
+        // Act
+        val result = sectorService.getRevenue("A", date)
+
+        // Assert
+        assertTrue(result.isPresent)
+        assertEquals(revenue, result.get())
+    }
+
+    @Test
+    fun `getRevenue should return empty when no revenue exists`() {
+        // Arrange
+        val sector = createSampleSector()
+        val date = LocalDate.now()
+
+        whenever(sectorRepository.findByCode("A")).thenReturn(Optional.of(sector))
+        whenever(revenueRepository.findBySectorAndRevenueDate(sector, date)).thenReturn(Optional.empty())
+
+        // Act
+        val result = sectorService.getRevenue("A", date)
+
+        // Assert
+        assertFalse(result.isPresent)
+    }
+
+    @Test
+    fun `getRevenueForDateRange should return list of revenues`() {
+        // Arrange
+        val sector = createSampleSector()
+        val startDate = LocalDate.now().minusDays(2)
+        val endDate = LocalDate.now()
+
+        val revenue1 = Revenue(
+            revenueDate = startDate,
+            amount = BigDecimal("100.00"),
+            sector = sector
+        )
+
+        val revenue2 = Revenue(
+            revenueDate = endDate,
+            amount = BigDecimal("200.00"),
+            sector = sector
+        )
+
+        whenever(sectorRepository.findByCode("A")).thenReturn(Optional.of(sector))
+        whenever(revenueRepository.findBySectorAndRevenueDateBetween(sector, startDate, endDate))
+            .thenReturn(listOf(revenue1, revenue2))
+
+        // Act
+        val result = sectorService.getRevenueForDateRange("A", startDate, endDate)
+
+        // Assert
+        assertEquals(2, result.size)
+        assertEquals(revenue1, result[0])
+        assertEquals(revenue2, result[1])
+    }
+
+    @Test
+    fun `getRevenueForDateRange should return empty list when no revenues exist`() {
+        // Arrange
+        val sector = createSampleSector()
+        val startDate = LocalDate.now().minusDays(2)
+        val endDate = LocalDate.now()
+
+        whenever(sectorRepository.findByCode("A")).thenReturn(Optional.of(sector))
+        whenever(revenueRepository.findBySectorAndRevenueDateBetween(sector, startDate, endDate))
+            .thenReturn(emptyList())
+
+        // Act
+        val result = sectorService.getRevenueForDateRange("A", startDate, endDate)
+
+        // Assert
+        assertTrue(result.isEmpty())
     }
 
     private fun createSampleSector(): Sector {
