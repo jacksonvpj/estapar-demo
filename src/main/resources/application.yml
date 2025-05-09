@@ -33,4 +33,5 @@ flyway:
         - classpath:db/migration
 
 garage-simulator:
-  url: ${GARAGE_SIMULATOR_URL:http://localhost:3000}
+  url: ${GARAGE_SIMULATOR_URL:`http://localhost:3000`}
+

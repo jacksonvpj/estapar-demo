@@ -30,7 +30,7 @@ class StartupServiceCaller(
 ) : ApplicationEventListener<StartupEvent> {
 
     private val logger = LoggerFactory.getLogger(StartupServiceCaller::class.java)
-    private val maxRetries = 5
+    private val maxRetries = 3
     private val retryDelayMs = 2000L
 
     @ExecuteOn(TaskExecutors.IO)
