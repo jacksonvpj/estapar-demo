@@ -42,6 +42,8 @@ dependencies {
 
     // Swagger/OpenAPI
     compileOnly("io.micronaut.openapi:micronaut-openapi-annotations")
+    implementation("io.swagger.core.v3:swagger-annotations")
+    implementation("org.webjars:swagger-ui:4.15.5")
 
     // Test
     testImplementation("io.micronaut.test:micronaut-test-junit5")

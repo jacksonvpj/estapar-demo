@@ -9,11 +9,37 @@ micronaut:
         paths: classpath:META-INF/swagger
         mapping: /swagger/**
       swagger-ui:
-        paths: classpath:META-INF/swagger/views/swagger-ui
+        paths: classpath:META-INF/resources/webjars/swagger-ui/4.15.5
         mapping: /swagger-ui/**
+      public:
+        paths: classpath:public
+        mapping: /**
   health:
     monitor:
       enabled: true
+  openapi:
+    views:
+      spec: swagger-ui.enabled=true,redoc.enabled=true,rapidoc.enabled=true,swagger-ui.theme=flattop
+
+# OpenAPI configuration
+openapi:
+  info:
+    title: Estapar API
+    version: 1.0
+    description: API para o sistema Estapar
+    contact:
+      name: Jackson Valadares
+      email: jackson.valadares@ideen.tech
+    license:
+      name: Apache 2.0
+      url: https://www.apache.org/licenses/LICENSE-2.0
+  tags:
+    - name: Parking
+      description: Parking operations
+    - name: Revenue
+      description: Revenue operations
+    - name: Sectors
+      description: Sector management
 
 datasources:
   default:
@@ -34,4 +60,3 @@ flyway:
 
 garage-simulator:
   url: ${GARAGE_SIMULATOR_URL:`http://localhost:3000`}
-
