@@ -129,12 +129,12 @@ class SpotServiceTest : EstaparTestContainer()  {
     @Test
     fun `getSpotStatus should throw exception when spot does not exist`() {
         // Arrange
-        val latitude = 10.0
-        val longitude = 20.0
+        val latitude = -23.561664
+        val longitude = -46.655961
         whenever(spotRepository.findByLatitudeAndLongitude(latitude, longitude)).thenReturn(Optional.empty())
 
         // Act & Assert
-        assertThrows<IllegalStateException> { spotService.getSpotStatus(latitude, longitude) }
+        assertThrows<NoSuchElementException> { spotService.getSpotStatus(latitude, longitude) }
     }
 
     @Test
@@ -178,12 +178,12 @@ class SpotServiceTest : EstaparTestContainer()  {
     @Test
     fun `setSpotOccupied should throw exception when spot does not exist`() {
         // Arrange
-        val latitude = 10.0
-        val longitude = 20.0
+        val latitude = -23.561664
+        val longitude = -46.655961
         whenever(spotRepository.findByLatitudeAndLongitude(latitude, longitude)).thenReturn(Optional.empty())
 
         // Act & Assert
-        assertThrows<IllegalStateException> { spotService.setSpotOccupied(latitude, longitude, true) }
+        assertThrows<NoSuchElementException> { spotService.setSpotOccupied(latitude, longitude, true) }
     }
 
     private fun createSampleSector(): Sector {
