@@ -151,15 +151,6 @@ class MockSectorService(
             }
         }
     }
-
-    // Stub methods for other SectorService methods that might be called
-    fun getDefaultSector(): Any? = null
-    fun getSectorByCode(code: String): Any? = sectorRepository.findByCode(code).orElse(null)
-    fun getSectorByCodeWithSpots(code: String): Any? = sectorRepository.findByCode(code).orElse(null)
-    fun calculateOccupancyPercentage(code: String): Double = 0.0
-    fun isSectorFull(code: String): Boolean = false
-    fun recordRevenue(sectorCode: String, amount: BigDecimal, date: LocalDate): Any? = null
-    fun getRevenueForDateRange(sectorCode: String, startDate: LocalDate, endDate: LocalDate): List<Any> = emptyList()
 }
 
 // Simple class to mock Revenue

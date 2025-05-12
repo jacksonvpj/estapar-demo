@@ -1,13 +1,11 @@
 package tech.ideen.estapar.controller
 
-import io.micronaut.context.annotation.Replaces
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -16,7 +14,6 @@ import tech.ideen.estapar.api.dto.webhook.ExitEventDTO
 import tech.ideen.estapar.api.dto.webhook.ParkedEventDTO
 import tech.ideen.estapar.config.EstaparTestContainer
 import tech.ideen.estapar.domain.model.EventType
-import tech.ideen.estapar.service.VehicleService
 
 @MicronautTest
 class WebhookControllerTest : EstaparTestContainer(){
@@ -122,25 +119,3 @@ class WebhookControllerTest : EstaparTestContainer(){
 
 }
 
-@Singleton
-@Replaces(VehicleService::class)
-class MockWebhookVehicleService {
-
-    fun processEntryEvent(event: Any): Any? {
-        // Just return success, no need to actually process the event
-        return null
-    }
-
-    fun processParkedEvent(event: Any): Any? {
-        // Just return success, no need to actually process the event
-        return null
-    }
-
-    fun processExitEvent(event: Any): Any? {
-        // Just return success, no need to actually process the event
-        return null
-    }
-
-    // Stub methods for other VehicleService methods that might be called
-    fun getVehicleStatus(licensePlate: String): Map<String, Any?> = emptyMap()
-}

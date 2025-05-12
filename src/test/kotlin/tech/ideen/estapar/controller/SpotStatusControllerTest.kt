@@ -22,7 +22,6 @@ import tech.ideen.estapar.config.EstaparTestContainer
 import tech.ideen.estapar.domain.model.EventType
 import tech.ideen.estapar.service.SpotService
 import java.time.LocalDateTime
-import java.util.Optional
 
 @MicronautTest
 class SpotStatusControllerTest : EstaparTestContainer(){
@@ -141,7 +140,4 @@ class MockSpotService {
         }
     }
 
-    // Stub methods for other SpotService methods that might be called
-    fun getSpotByLocation(latitude: Double, longitude: Double): Optional<Any> = Optional.empty()
-    fun setSpotOccupied(latitude: Double, longitude: Double, occupied: Boolean): Any? = null
 }
